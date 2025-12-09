@@ -27,12 +27,12 @@ public class PasswordResetEmail implements ChannelStrategy {
 
         Map<String, Object> data = jsonUtil.jsonToMap(request.getMessage());
 
-        String token = (String) data.get("token");
+        String code = (String) data.get("token"); // The token field now contains the reset code
         String expiresAt = (String) data.get("expiresAt");
         String fullName = (String) data.get("fullName");
         String userEmail = (String) data.get("userEmail");
 
-        String htmlMessage = passwordResetTemplate(fullName, token, expiresAt);
+        String htmlMessage = passwordResetTemplate(fullName, code, expiresAt);
 
         try {
             emailService.sendEmail(userEmail, subject, htmlMessage);
@@ -41,84 +41,53 @@ public class PasswordResetEmail implements ChannelStrategy {
         }
     }
 
-    private String passwordResetTemplate(String fullName, String token, String expiresAt) {
-        String resetLink = "localhost:8080/reset-password?token=" + token;
+    private String passwordResetTemplate(String fullName, String code, String expiresAt) {
+        StringBuilder sb = new StringBuilder();
 
-        return """
-        <!DOCTYPE html>
-        <html lang="en">
-        <head>
-            <meta charset="UTF-8" />
-            <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-            <title>Password Reset</title>
-            <style>
-                body {
-                    font-family: Arial, sans-serif;
-                    background-color: #f4f4f7;
-                    color: #333;
-                    margin: 0;
-                    padding: 0;
-                }
-                .container {
-                    max-width: 600px;
-                    margin: 40px auto;
-                    background-color: #ffffff;
-                    border-radius: 10px;
-                    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-                    overflow: hidden;
-                }
-                .header {
-                    background-color: #007bff;
-                    color: white;
-                    text-align: center;
-                    padding: 20px;
-                }
-                .content {
-                    padding: 30px;
-                    line-height: 1.6;
-                }
-                .content h2 {
-                    color: #007bff;
-                }
-                .button {
-                    display: inline-block;
-                    background-color: #007bff;
-                    color: white;
-                    padding: 12px 24px;
-                    border-radius: 5px;
-                    text-decoration: none;
-                    margin-top: 20px;
-                    font-weight: bold;
-                }
-                .footer {
-                    text-align: center;
-                    font-size: 12px;
-                    color: #999;
-                    padding: 20px;
-                }
-            </style>
-        </head>
-        <body>
-            <div class="container">
-                <div class="header">
-                    <h1>Password Reset Request</h1>
-                </div>
-                <div class="content">
-                    <p>Hi %s,</p>
-                    <p>We received a request to reset your password for your account. Click the button below to set a new password:</p>
-                    <p style="text-align: center;">
-                        <a href="%s" class="button">Reset Password</a>
-                    </p>
-                    <p>This link will expire on <strong>%s</strong>.</p>
-                    <p>If you did not request a password reset, you can safely ignore this email.</p>
-                    <p>Thank you,<br>The Support Team</p>
-                </div>
-                <div class="footer">
-                    &copy; %d Your Company. All rights reserved.
-                </div>
-            </div>
-        </body>
-        </html>
-        """.formatted(fullName, resetLink, expiresAt, java.time.Year.now().getValue());
+        sb.append("<!DOCTYPE html>");
+        sb.append("<html lang=\"en\">");
+        sb.append("<head>");
+        sb.append("<meta charset=\"UTF-8\" />");
+        sb.append("<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\" />");
+        sb.append("<title>Password Reset</title>");
+        sb.append("<style>");
+        sb.append("body { font-family: Arial, sans-serif; background-color: #f4f4f7; color: #333; margin: 0; padding: 0; }");
+        sb.append(".container { max-width: 600px; margin: 40px auto; background-color: #ffffff; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); overflow: hidden; }");
+        sb.append(".header { background-color: #007bff; color: white; text-align: center; padding: 20px; }");
+        sb.append(".content { padding: 30px; line-height: 1.6; }");
+        sb.append(".content h2 { color: #007bff; }");
+        sb.append(".button { display: inline-block; background-color: #007bff; color: white; padding: 12px 24px; border-radius: 5px; text-decoration: none; margin-top: 20px; font-weight: bold; }");
+        sb.append(".footer { text-align: center; font-size: 12px; color: #999; padding: 20px; }");
+        sb.append("</style>");
+        sb.append("</head>");
+        sb.append("<body>");
+        sb.append("<div class=\"container\">");
+        sb.append("<div class=\"header\"><h1>Password Reset Request</h1></div>");
+        sb.append("<div class=\"content\">");
+
+        sb.append("<p>Hi ").append(fullName).append(",</p>");
+        sb.append("<p>We received a request to reset your password for your account. Use the code below to reset your password:</p>");
+
+        sb.append("<div style=\"text-align: center; margin: 30px 0;\">");
+        sb.append("<div style=\"display: inline-block; background-color: #f0f0f0; padding: 20px 40px; border-radius: 8px; font-size: 32px; font-weight: bold; letter-spacing: 8px; font-family: monospace; color: #007bff;\">");
+        sb.append(code);
+        sb.append("</div>");
+        sb.append("</div>");
+
+        sb.append("<p>Enter this code on the password reset page to set a new password.</p>");
+        sb.append("<p>This code will expire on <strong>").append(expiresAt).append("</strong>.</p>");
+        sb.append("<p>If you did not request a password reset, you can safely ignore this email.</p>");
+        sb.append("<p>Thank you,<br>The Support Team</p>");
+        sb.append("</div>");
+
+        sb.append("<div class=\"footer\">&copy; ")
+                .append(java.time.Year.now().getValue())
+                .append(" Your Company. All rights reserved.</div>");
+
+        sb.append("</div>");
+        sb.append("</body>");
+        sb.append("</html>");
+
+        return sb.toString();
     }
 }

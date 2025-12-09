@@ -35,7 +35,6 @@ public class AccountVerificationEmail implements ChannelStrategy {
         try {
             emailService.sendEmail(userEmail, subject, htmlMessage);
         } catch (MessagingException e) {
-            //throw new VerificationEmailFailureException(e.getMessage());
         }
     };
 

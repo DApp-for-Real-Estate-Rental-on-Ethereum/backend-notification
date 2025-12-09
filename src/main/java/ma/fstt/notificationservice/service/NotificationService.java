@@ -36,7 +36,6 @@ public class NotificationService {
     public Notification createNotification(NotificationRequestDTO request) {
         try{
             Notification notification = new Notification();
-
             notification.setChannel(request.getChannel());
             notification.setCreatedAt(request.getCreatedAt());
             notification.setUserId(request.getUserId());
