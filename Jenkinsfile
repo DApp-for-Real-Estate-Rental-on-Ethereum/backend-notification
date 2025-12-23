@@ -137,6 +137,8 @@ pipeline {
                     docker rmi localhost:5000/real-estate-notification-service:${BUILD_NUMBER} || true
                 """
             }
+            // Clean workspace
+            deleteDir()
         }
         success {
             echo "Notification-service pipeline completed successfully! 🎉"
