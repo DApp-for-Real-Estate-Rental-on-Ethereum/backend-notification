@@ -53,6 +53,7 @@ pipeline {
                 script {
                     sh '''
                         echo "Running SonarQube analysis..."
+                        chmod +x ./mvnw
                         ./mvnw sonar:sonar \
                           -Dsonar.projectKey=real-estate-notification-service \
                           -Dsonar.host.url=http://localhost:9000 \
